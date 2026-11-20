@@ -443,6 +443,12 @@ bool AppSave::ChangedOnDisk() const { return Files::LastWriteTime(path).value_or
 Gvas::Props* AppSave::Section(const char* name) { return Gvas::Struct(file.root, name); }
 const Gvas::Props* AppSave::Section(const char* name) const { return const_cast<AppSave*>(this)->Section(name); }
 
+int64_t AppSave::RomVersion() const {
+    const Props* header = Section("_Header");
+    const Property* p = header ? Gvas::Find(*header, "_RomVersion") : nullptr;
+    return p && p->value.kind == Kind::Int ? p->value.i : 0;
+}
+
 // ── Numbers ─────────────────────────────────────────────────────────────────────────────────────
 
 std::vector<NumberField> AppSave::Numbers() const {

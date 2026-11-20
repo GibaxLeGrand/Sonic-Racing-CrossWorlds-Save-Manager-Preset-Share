@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include "Services/SaveFile/AppSave.h"
+#include "Services/Share/PresetShare.h"
 #include "UI/Material/PackIcon.h"
 #include "Windows/Main/Tabs/SaveEditor/SaveEditorKit.h"
 #include "Windows/Main/Tabs/Tab.h"
@@ -45,6 +46,7 @@ class SaveEditorSwitch;
 //   SaveEditorVariants.cpp  the card with a character's versions
 //   SaveEditorCourses.cpp   the courses section; SaveEditorCourse.cpp, a course's card
 //   SaveEditorVehicles.cpp  the vehicles section and its garage
+//   SaveEditorShare.cpp     sharing gadget presets: codes and .srcwshare files, out and in
 //   SaveEditorKit           the shared look (rings, chips, cards, bursts, colours)
 class SaveEditorTab : public Tab {
 public:
@@ -146,6 +148,17 @@ private:
     const std::vector<Services::SaveFile::GadgetPreset>& GadgetPresets();
     const std::vector<Services::SaveFile::ItemRow>& GadgetRows();
     std::wstring GadgetName(const std::wstring& id);
+    // Sharing gadget presets (SaveEditorShare.cpp): a preset's code to the clipboard and a code from it
+    // onto a preset; the shown player's presets to a .srcwshare file and back, each on its letter
+    void CopyPresetCode(const Services::SaveFile::GadgetPreset& preset);
+    void PastePresetCode(int preset);
+    void ExportPresets();
+    void ImportPresets();
+    // Puts shared presets (each with the preset it goes on) on the shown player's, after checking the game
+    // version they were made with: newer than the save's is refused; older or unknown, what changed in
+    // their gadgets is said first. Asks before replacing a preset that isn't empty. Nothing is unlocked.
+    void PutShared(std::vector<std::pair<int, Services::Share::SharedPreset>> targets, const Services::Share::GameVersion& from,
+                   int missing, int skipped);
     // The courses section: its bar and a tile per course (SaveEditorCourses.cpp)
     void CoursesView(UI::Ui& ui, const Rect& r);
     void CoursesBar(UI::Ui& ui, const Rect& r);

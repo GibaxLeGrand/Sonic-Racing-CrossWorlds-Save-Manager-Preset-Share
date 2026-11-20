@@ -166,6 +166,8 @@ public:
     bool Dirty() const { return dirty; }
     // The game (or anything else) wrote the file since it was read
     bool ChangedOnDisk() const;
+    // The game version that wrote the save (_Header._RomVersion: 20000 for 2.0.0); 0 when it has none
+    int64_t RomVersion() const;
 
     std::vector<NumberField> Numbers() const;
     void SetNumber(const std::string& key, int64_t value);

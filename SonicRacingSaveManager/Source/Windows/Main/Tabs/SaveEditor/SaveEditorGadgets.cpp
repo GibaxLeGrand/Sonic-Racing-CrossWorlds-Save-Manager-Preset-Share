@@ -103,7 +103,7 @@ void SaveEditorTab::GadgetPresetCard(UI::Ui& ui, UI::Id id, const Rect& r, const
     if (editing) x += Chip(ui, x, hy + 15.f, Loc::Get("saveeditor_gadget_editing"), kAmber, false, true) + 6.f;
     const int unlocked = save->GadgetSlotCount();
     const int freeSlots = FreeSlots(preset, unlocked);
-    Chip(ui, x, hy + 15.f, Loc::Fmt("saveeditor_gadget_free", std::to_wstring(freeSlots)), p.foreground.Fade(0.6f));
+    const float leftEnd = x + Chip(ui, x, hy + 15.f, Loc::Fmt("saveeditor_gadget_free", std::to_wstring(freeSlots)), p.foreground.Fade(0.6f));
 
     float right = r.R() - 14.f;
     if (!preset.gadgets.empty() || !preset.special.empty()) {
@@ -129,6 +129,25 @@ void SaveEditorTab::GadgetPresetCard(UI::Ui& ui, UI::Id id, const Rect& r, const
             const int player = gadgetPlayer, index = preset.index;
             Edit([&] { save->SelectGadgetPreset(player, index); });
             Status(Loc::Fmt("saveeditor_gadget_now", name));
+        }
+    }
+    // Sharing (SaveEditorShare.cpp): its code to the clipboard, and a code from the clipboard onto it;
+    // left out when the card is too narrow for them
+    {
+        const bool filled = !preset.gadgets.empty() || !preset.special.empty();
+        if (right - (filled ? 2.f : 1.f) * 38.f > leftEnd + 8.f) {
+            if (filled) {
+                const UI::Id cid = UI::HashId(id, 0xC2);
+                right -= 38.f;
+                if (M::IconButton(ui, cid, { right, hy - 1.f, 32.f, 32.f }, M::Icon::Export, 17.f, M::IconButtonLook(GroupColor(2)), !busy))
+                    CopyPresetCode(preset);
+                ui.Tooltip(cid, Loc::Get("share_copy_tip"));
+            }
+            const UI::Id pid = UI::HashId(id, 0xC3);
+            right -= 38.f;
+            if (M::IconButton(ui, pid, { right, hy - 1.f, 32.f, 32.f }, M::Icon::Import, 17.f, M::IconButtonLook(GroupColor(2)), !busy))
+                PastePresetCode(preset.index);
+            ui.Tooltip(pid, Loc::Get("share_paste_tip"));
         }
     }
 
@@ -463,6 +482,19 @@ void SaveEditorTab::GadgetsView(UI::Ui& ui, const Rect& r) {
             gadgetSpecial = false;
         }
         x += w + 8.f;
+    }
+    // The shown player's presets to a .srcwshare file, and a file's back on them (SaveEditorShare.cpp)
+    x += 6.f;
+    {
+        const UI::Id eid = ui.MakeId("se-gadget-share", 0), iid = ui.MakeId("se-gadget-share", 1);
+        if (M::IconButton(ui, eid, { x, r.y, kGadgetBarH, kGadgetBarH }, M::Icon::Download, 18.f, M::IconButtonLook(GroupColor(1)), !busy))
+            ExportPresets();
+        ui.Tooltip(eid, Loc::Get("share_export_tip"));
+        x += kGadgetBarH + 6.f;
+        if (M::IconButton(ui, iid, { x, r.y, kGadgetBarH, kGadgetBarH }, M::Icon::FileImport, 18.f, M::IconButtonLook(GroupColor(1)), !busy))
+            ImportPresets();
+        ui.Tooltip(iid, Loc::Get("share_import_tip"));
+        x += kGadgetBarH + 8.f;
     }
     // The plate's unlocked slots, and unlocking them all
     {
